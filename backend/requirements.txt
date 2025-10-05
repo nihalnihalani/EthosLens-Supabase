@@ -1,0 +1,58 @@
+# Core Framework
+fastapi==0.108.0
+uvicorn[standard]==0.25.0
+python-multipart==0.0.6
+
+# Database
+sqlmodel==0.0.14
+asyncpg==0.29.0
+alembic==1.13.1
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# AI & External APIs
+google-generativeai==0.3.2
+openai==1.6.1
+requests==2.31.0
+httpx==0.26.0
+
+# Cultural Intelligence APIs
+qloo-api==1.0.0  # Custom package for Qloo integration
+tavily-python==0.3.0
+
+# Data Processing
+pandas==2.1.4
+numpy==1.26.2
+pydantic==2.5.2
+pydantic-settings==2.1.0
+
+# Caching & Background Tasks
+redis==5.0.1
+celery==5.3.4
+python-crontab==3.0.0
+
+# Development & Testing
+pytest==7.4.3
+pytest-asyncio==0.23.2
+black==23.12.0
+isort==5.13.2
+mypy==1.8.0
+
+# Monitoring & Logging
+structlog==23.2.0
+prometheus-client==0.19.0
+
+# Environment & Configuration
+python-dotenv==1.0.0
+pyyaml==6.0.1
+
+# Image & Video Processing (Optional)
+pillow==10.1.0
+opencv-python==4.8.1.78
+
+# Utilities
+python-slugify==8.0.1
+jinja2==3.1.2

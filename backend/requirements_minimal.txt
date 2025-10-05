@@ -1,0 +1,29 @@
+# Core Framework
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Database
+sqlmodel
+asyncpg
+alembic
+
+# Authentication & Security
+python-jose[cryptography]
+passlib[bcrypt]
+
+# AI & External APIs
+google-generativeai
+requests
+httpx
+
+# Data Processing
+pydantic
+pydantic-settings
+
+# Environment & Configuration
+python-dotenv
+
+# Utilities
+python-slugify
+jinja2

@@ -1,0 +1,41 @@
+{
+  "name": "ad-alchemy",
+  "version": "1.0.0",
+  "description": "AI-powered advertising creative platform combining cultural intelligence with video/image generation",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:db\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && uvicorn src.main:app --reload",
+    "dev:db": "docker-compose up -d",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && echo 'Backend build complete'",
+    "start": "npm run start:frontend",
+    "start:frontend": "cd frontend && npm run start",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd frontend && npm test",
+    "test:backend": "cd backend && pytest",
+    "lint": "npm run lint:frontend",
+    "lint:frontend": "cd frontend && npm run lint"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "ai",
+    "advertising",
+    "video-generation",
+    "cultural-intelligence",
+    "marketing",
+    "creative",
+    "veo3",
+    "taste-ai"
+  ],
+  "author": "AD Alchemy Team",
+  "license": "MIT"
+}
