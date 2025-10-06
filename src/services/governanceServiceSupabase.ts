@@ -1,9 +1,8 @@
-import { LLMInteraction, AgentAction, Violation } from '../types';
+import { LLMInteraction, Violation } from '../types';
 import { agents } from '../agents';
 import { inkeepAgentsService } from './inkeepAgentsService';
 import supabaseService from './supabaseService';
 import { createAuditLog } from './supabaseService';
-
 /**
  * Enhanced governance service with Supabase integration
  * Provides real-time data persistence and analytics
@@ -89,7 +88,7 @@ export class GovernanceServiceSupabase {
       if (this.shouldUseInkeep()) {
         return await this.processWithInkeepAgents(interaction, context);
       } else {
-        return await this.processWithLegacyAgents(interaction, context);
+        return await this.processWithLegacyAgents(interaction);
       }
     } catch (error) {
       console.error('Error processing interaction:', error);
@@ -149,7 +148,7 @@ export class GovernanceServiceSupabase {
       return interaction;
     } catch (error) {
       console.error('Error processing with Inkeep agents:', error);
-      return this.processWithLegacyAgents(interaction, context);
+      return this.processWithLegacyAgents(interaction);
     }
   }
 
@@ -157,8 +156,7 @@ export class GovernanceServiceSupabase {
    * Process with legacy agents
    */
   private async processWithLegacyAgents(
-    interaction: LLMInteraction,
-    context?: any
+    interaction: LLMInteraction
   ): Promise<LLMInteraction> {
     const agentPromises = agents.map(async (agent) => {
       try {

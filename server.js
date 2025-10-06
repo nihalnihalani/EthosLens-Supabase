@@ -15,6 +15,7 @@ let neo4jDriver = null;
 // Initialize services
 async function initializeServices() {
   try {
+    console.log('🔍 Checking OpenAI configuration...');
     // Initialize OpenAI for LlamaIndex
     if (process.env.OPENAI_API_KEY) {
       // LlamaIndex will automatically use OPENAI_API_KEY from environment
@@ -23,25 +24,50 @@ async function initializeServices() {
       console.warn('⚠️ OPENAI_API_KEY not found in environment variables');
     }
 
+    console.log('🔍 Checking Neo4j configuration...');
     // Initialize Neo4j driver
     if (process.env.NEO4J_URI && process.env.NEO4J_USERNAME && process.env.NEO4J_PASSWORD) {
+      console.log(`📡 Connecting to Neo4j at ${process.env.NEO4J_URI}...`);
       neo4jDriver = neo4j.driver(
         process.env.NEO4J_URI,
-        neo4j.auth.basic(process.env.NEO4J_USERNAME, process.env.NEO4J_PASSWORD)
+        neo4j.auth.basic(process.env.NEO4J_USERNAME, process.env.NEO4J_PASSWORD),
+        { 
+          maxConnectionLifetime: 3 * 60 * 60 * 1000, // 3 hours
+          maxConnectionPoolSize: 50,
+          connectionAcquisitionTimeout: 2 * 60 * 1000 // 2 minutes
+        }
       );
       
-      // Test connection
+      // Test connection with timeout
+      console.log('🧪 Testing Neo4j connection...');
       const session = neo4jDriver.session();
-      await session.run('RETURN 1');
-      await session.close();
-      console.log('✅ Neo4j connection established');
+      try {
+        await Promise.race([
+          session.run('RETURN 1'),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Neo4j connection timeout')), 10000)
+          )
+        ]);
+        console.log('✅ Neo4j connection established');
+      } catch (connError) {
+        console.warn('⚠️ Neo4j connection test failed:', connError.message);
+        console.warn('⚠️ Continuing without Neo4j - some features may be limited');
+        if (neo4jDriver) {
+          await neo4jDriver.close();
+          neo4jDriver = null;
+        }
+      } finally {
+        await session.close();
+      }
     } else {
-      console.warn('⚠️ Neo4j configuration incomplete');
+      console.warn('⚠️ Neo4j configuration incomplete - skipping Neo4j initialization');
     }
 
     console.log('🎯 All services initialized successfully');
   } catch (error) {
     console.error('❌ Service initialization error:', error);
+    console.error('Stack:', error.stack);
+    // Don't throw - allow server to start even if some services fail
   }
 }
 
@@ -520,14 +546,22 @@ app.get('/api/governance/insights', async (req, res) => {
 });
 
 // Initialize services and start server
-initializeServices().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 EthosLens Agent Backend running on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/health`);
-    console.log(`🤖 CopilotKit endpoint: http://localhost:${PORT}/api/copilotkit`);
-    console.log(`📋 Interactions API: http://localhost:${PORT}/api/interactions`);
+console.log('🔄 Starting server initialization...');
+initializeServices()
+  .then(() => {
+    console.log('✅ Services initialized, starting HTTP server...');
+    app.listen(PORT, () => {
+      console.log(`🚀 EthosLens Agent Backend running on port ${PORT}`);
+      console.log(`📊 Health check: http://localhost:${PORT}/health`);
+      console.log(`🤖 CopilotKit endpoint: http://localhost:${PORT}/api/copilotkit`);
+      console.log(`📋 Interactions API: http://localhost:${PORT}/api/interactions`);
+    });
+  })
+  .catch((error) => {
+    console.error('❌ Failed to initialize services:', error);
+    console.error('Stack trace:', error.stack);
+    process.exit(1);
   });
-});
 
 // Graceful shutdown
 process.on('SIGINT', async () => {

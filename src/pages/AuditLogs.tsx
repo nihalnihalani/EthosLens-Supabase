@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Download, Filter, Activity } from 'lucide-react';
-import { LLMInteraction, AuditLogEntry } from '../types';
+import { FileText, Search, Filter, Download } from 'lucide-react';
+import { LLMInteraction } from '../types';
+import { API_URLS } from '../config/api';
 import { format } from 'date-fns';
 import EmptyState from '../components/EmptyState';
-import { FileText } from 'lucide-react';
+
+interface AuditLogEntry {
+  id: string;
+  timestamp: Date;
+  agent: string;
+  action: string;
+  details: string;
+  status: string;
+}
 
 const AuditLogs: React.FC = () => {
   const [logs, setLogs] = useState<LLMInteraction[]>([]);
@@ -19,7 +28,7 @@ const AuditLogs: React.FC = () => {
     const fetchLogs = async () => {
       try {
         // Fetch interactions from new backend
-        const response = await fetch('http://localhost:4000/api/interactions');
+        const response = await fetch(API_URLS.interactions);
         if (response.ok) {
           const interactions = await response.json();
           setLogs(interactions);

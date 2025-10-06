@@ -1,9 +1,10 @@
-import { LLMInteraction, AgentAction, Violation } from '../types';
+import { LLMInteraction } from '../types';
 import { agents } from '../agents';
 import { inkeepAgentsService } from './inkeepAgentsService';
 
 /**
  * Unified governance service that can use either legacy agents or Inkeep agents
+{{ ... }}
  * Provides seamless switching between implementations
  */
 export class GovernanceService {
@@ -97,22 +98,7 @@ export class GovernanceService {
       if (this.shouldUseInkeep()) {
         return await inkeepAgentsService.getGovernanceInsights(timeframe);
       } else {
-        // Return mock insights for legacy system
-        return {
-          totalInteractions: 100,
-          totalViolations: 8,
-          blockedCount: 2,
-          approvalRate: '94%',
-          topViolationTypes: ['PII', 'Misinformation', 'Bias'],
-          complianceStatus: {
-            gdpr: 'compliant',
-            contentSafety: 'compliant'
-          },
-          trends: {
-            violationTrend: 'stable',
-            complianceTrend: 'improving'
-          }
-        };
+        throw new Error('Inkeep agents not configured. Cannot get governance insights.');
       }
     } catch (error) {
       console.error('Error getting governance insights:', error);

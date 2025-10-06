@@ -1,4 +1,4 @@
-import { LLMInteraction, AgentAction, Violation } from '../types';
+import { AgentAction, Violation } from '../types';
 
 /**
  * Service for integrating with Inkeep EthosLens agents
@@ -166,8 +166,8 @@ Please:
         throw new Error(`Inkeep agents API error: ${response.status}`);
       }
 
-      const result = await response.json();
-      return this.parseFeedbackResponse(result);
+      await response.json(); // Result available but not currently used for parsing
+      return this.parseFeedbackResponse();
     } catch (error) {
       console.error('Error processing feedback:', error);
       throw error;
@@ -209,8 +209,8 @@ Please include:
         throw new Error(`Inkeep agents API error: ${response.status}`);
       }
 
-      const result = await response.json();
-      return this.parseInsightsResponse(result);
+      await response.json(); // Result available but not currently used for parsing
+      return this.parseInsightsResponse();
     } catch (error) {
       console.error('Error getting governance insights:', error);
       throw error;
@@ -309,12 +309,13 @@ Please include:
   /**
    * Parse feedback processing response
    */
-  private parseFeedbackResponse(response: any): {
+  private parseFeedbackResponse(/* _response: any */): {
     feedbackProcessed: boolean;
     auditLogCreated: boolean;
     improvementRecommendations?: string[];
   } {
-    const content = response.content || response.message || '';
+    // Response content available but not currently used for parsing
+    // const _content = response.content || response.message || '';
     
     return {
       feedbackProcessed: true,
@@ -330,7 +331,7 @@ Please include:
   /**
    * Parse governance insights response
    */
-  private parseInsightsResponse(response: any): {
+  private parseInsightsResponse(/* _response: any */): {
     totalInteractions: number;
     totalViolations: number;
     blockedCount: number;
@@ -339,7 +340,8 @@ Please include:
     complianceStatus: any;
     trends: any;
   } {
-    const content = response.content || response.message || '';
+    // Response content available but not currently used for parsing
+    // const content = response.content || response.message || '';
     
     // In production, you'd parse actual metrics from the agent response
     return {

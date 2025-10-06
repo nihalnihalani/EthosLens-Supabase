@@ -9,13 +9,13 @@ import { LLMInteraction } from '../types';
 import { useToast } from '../hooks/useToast';
 import { ToastContainer } from '../components/Toast';
 import EmptyState from '../components/EmptyState';
-import { Activity, RefreshCw, MessageSquare, Bot, Zap } from 'lucide-react';
+import { Activity, RefreshCw, MessageSquare, Bot } from 'lucide-react';
+import { API_URLS } from '../config/api';
 
 const LiveMonitor: React.FC = () => {
   const [interactions, setInteractions] = useState<LLMInteraction[]>([]);
   const [showCopilot, setShowCopilot] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'error'>('checking');
   const toast = useToast();
 
   // Make interactions data available to CopilotKit
@@ -43,7 +43,7 @@ const LiveMonitor: React.FC = () => {
     ],
     handler: async ({ timeframe }) => {
       const now = new Date();
-      let cutoffTime = new Date();
+      const cutoffTime = new Date();
       
       switch (timeframe) {
         case 'last hour':
@@ -75,23 +75,9 @@ const LiveMonitor: React.FC = () => {
   });
 
   useEffect(() => {
-    const checkBackendStatus = async () => {
-      try {
-        const response = await fetch('http://localhost:4000/health');
-        if (response.ok) {
-          setBackendStatus('connected');
-        } else {
-          setBackendStatus('error');
-        }
-      } catch (error) {
-        console.error('Backend health check failed:', error);
-        setBackendStatus('error');
-      }
-    };
-
     const fetchInteractions = async () => {
       try {
-        const response = await fetch('http://localhost:4000/api/interactions');
+        const response = await fetch(API_URLS.interactions);
         if (response.ok) {
           const data = await response.json();
           setInteractions(data);
@@ -101,8 +87,6 @@ const LiveMonitor: React.FC = () => {
       }
     };
 
-    // Check backend status and fetch interactions
-    checkBackendStatus();
     fetchInteractions();
   }, []);
 
@@ -113,7 +97,7 @@ const LiveMonitor: React.FC = () => {
       console.log('🤖 Submitting prompt to backend:', prompt.substring(0, 100) + '...');
       
       // Send prompt to our CopilotKit-compatible backend
-      const response = await fetch('http://localhost:4000/api/copilotkit', {
+      const response = await fetch(API_URLS.copilotkit, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,13 +156,13 @@ const LiveMonitor: React.FC = () => {
 
   const handleManualRefresh = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/interactions');
+      const response = await fetch(API_URLS.interactions);
       if (response.ok) {
         const data = await response.json();
         setInteractions(data);
         toast.success('Refreshed', 'Interactions updated successfully');
       }
-    } catch (error) {
+    } catch {
       toast.error('Refresh Failed', 'Unable to fetch latest interactions');
     }
   };
@@ -283,23 +267,9 @@ const LiveMonitor: React.FC = () => {
           Ask me about governance insights, violation patterns, or get help with AI safety analysis. 
           I can analyze your data and provide recommendations.
         </p>
-        <div className="flex flex-col space-y-2">
-          <div className="flex items-center space-x-2 text-sm text-blue-600">
-            <MessageSquare className="h-4 w-4" />
-            <span>Try asking: "What are the most common violations today?" or "Analyze the approval rate trends"</span>
-          </div>
-          <div className="text-xs text-gray-500">
-            Backend: {window.location.protocol}//{window.location.hostname}:4000 
-            <span className={`ml-2 px-2 py-1 rounded text-xs ${
-              backendStatus === 'connected' ? 'bg-green-100 text-green-700' :
-              backendStatus === 'error' ? 'bg-red-100 text-red-700' :
-              'bg-yellow-100 text-yellow-700'
-            }`}>
-              {backendStatus === 'connected' ? '✓ Connected' :
-               backendStatus === 'error' ? '✗ Error' : '⏳ Checking...'}
-            </span> | 
-            CopilotKit: {showCopilot ? 'Active' : 'Inactive'}
-          </div>
+        <div className="flex items-center space-x-2 text-sm text-blue-600">
+          <MessageSquare className="h-4 w-4" />
+          <span>Try asking: "What are the most common violations today?" or "Analyze the approval rate trends"</span>
         </div>
         
         {showCopilot && (

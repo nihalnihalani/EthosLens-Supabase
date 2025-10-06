@@ -1,18 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Shield, 
-  Activity, 
-  CheckCircle, 
-  AlertTriangle, 
-  Settings, 
-  Play, 
-  Pause,
-  RotateCcw,
-  TrendingUp,
-  Clock,
-  Zap
-} from 'lucide-react';
+import { Activity, TrendingUp, Shield, AlertTriangle, CheckCircle, Clock, Settings, Play, Pause, RotateCcw, Zap } from 'lucide-react';
+import { API_URLS } from '../config/api';
 
 interface Agent {
   id: string;
@@ -37,7 +26,7 @@ const Agents: React.FC = () => {
       setIsLoading(true);
       try {
         // Fetch interactions to calculate agent statistics
-        const response = await fetch('http://localhost:4000/api/interactions');
+        const response = await fetch(API_URLS.interactions);
         if (response.ok) {
           const interactions = await response.json();
           

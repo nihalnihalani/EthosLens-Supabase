@@ -1,7 +1,6 @@
 import { LLMInteraction, DashboardStats, AgentSettings, AuditLogEntry, FeedbackEntry } from '../types';
 import { agents } from '../agents';
 import { graphNeo4jDatabaseService } from '../services/graphNeo4jService';
-import { mockApi } from './mockApi';
 import { rateLimiter } from '../utils/rateLimiter';
 import { InputSanitizer } from '../utils/inputSanitizer';
 import { callOpenAI, isOpenAIConfigured } from '../lib/openaiAgent';
@@ -17,9 +16,7 @@ export class ApiService {
       neo4jConfigured: graphNeo4jDatabaseService.isConfigured()
     });
     
-    if (!this.useNeo4j) {
-      console.warn('⚠️ Neo4j not configured, falling back to mock API');
-    } else {
+    if (this.useNeo4j) {
       console.log('✅ Neo4j configured, initializing schema...');
       // Initialize Neo4j schema
       graphNeo4jDatabaseService.initializeSchema().catch(console.error);
@@ -51,18 +48,11 @@ export class ApiService {
     const sanitizedPrompt = validation.sanitized!;
 
     // Generate LLM response using OpenAI
-    let llmResult;
-    if (isOpenAIConfigured()) {
-      llmResult = await callOpenAI(sanitizedPrompt);
-    } else {
-      // If OpenAI is not configured, use a simple mock response
-      llmResult = {
-        response: 'I cannot provide a response as the AI service is not properly configured.',
-        source: 'mock',
-        model: 'mock-model',
-        error: 'OpenAI API not configured'
-      };
+    if (!isOpenAIConfigured()) {
+      throw new Error('OpenAI API not configured. Please set VITE_OPENAI_API_KEY in your .env file.');
     }
+    
+    const llmResult = await callOpenAI(sanitizedPrompt);
     
     const interaction: LLMInteraction = {
       id: Math.random().toString(36).substr(2, 9),
@@ -73,7 +63,7 @@ export class ApiService {
       severity: 'low',
       violations: [],
       agentActions: [],
-      llmSource: llmResult.source as 'openai' | 'mock' | 'fallback',
+      llmSource: llmResult.source as 'openai' | 'fallback',
       llmModel: llmResult.model,
       llmError: llmResult.error
     };
@@ -145,16 +135,13 @@ export class ApiService {
         interaction.id = neo4jId;
         console.log('✅ Successfully saved to Neo4j:', neo4jId);
       } catch (error) {
-        console.error('❌ Failed to save to Neo4j, using mock API:', error);
         const errorMessage = error instanceof Error ? error.message : String(error);
-        const errorStack = error instanceof Error ? error.stack : '';
-        console.error('Error details:', errorMessage, errorStack);
-        // Don't fallback to mock API - throw the error so we can see what's wrong
+        console.error('❌ Failed to save to Neo4j:', errorMessage);
         throw new Error(`Neo4j save failed: ${errorMessage}`);
       }
     } else {
-      console.warn('⚠️ Neo4j not configured, using mock API');
-      return await mockApi.processPrompt(prompt);
+      console.warn('⚠️ Neo4j not configured, returning interaction without persistence');
+      return interaction;
     }
 
     return interaction;
@@ -188,14 +175,12 @@ export class ApiService {
         console.log(`✅ Retrieved ${interactions.length} interactions from Neo4j`);
         return interactions;
       } catch (error) {
-        console.error('❌ Failed to fetch from Neo4j, using mock API:', error);
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error('Error details:', errorMessage);
-        return await mockApi.getInteractions();
+        console.error('❌ Failed to fetch from Neo4j:', error);
+        return [];
       }
     } else {
-      console.warn('⚠️ Neo4j not configured, using mock API for getInteractions');
-      return await mockApi.getInteractions();
+      console.warn('⚠️ Neo4j not configured');
+      return [];
     }
   }
 
@@ -204,11 +189,11 @@ export class ApiService {
       try {
         return await graphNeo4jDatabaseService.getDashboardStats();
       } catch (error) {
-        console.error('Failed to fetch stats from Neo4j, using mock API:', error);
-        return await mockApi.getDashboardStats();
+        console.error('Failed to fetch stats from Neo4j:', error);
+        return { totalInteractions: 0, flaggedInteractions: 0, averageSeverity: 0, topViolations: [], agentActivity: [] };
       }
     }
-    return await mockApi.getDashboardStats();
+    return { totalInteractions: 0, flaggedInteractions: 0, averageSeverity: 0, topViolations: [], agentActivity: [] };
   }
 
   async getAuditLogs(): Promise<AuditLogEntry[]> {
@@ -216,11 +201,11 @@ export class ApiService {
       try {
         return await graphNeo4jDatabaseService.getAuditLogs();
       } catch (error) {
-        console.error('Failed to fetch audit logs from Neo4j, using mock API:', error);
-        return await mockApi.getAuditLogs();
+        console.error('Failed to fetch audit logs from Neo4j:', error);
+        return [];
       }
     }
-    return await mockApi.getAuditLogs();
+    return [];
   }
 
   async getFeedbackEntries(): Promise<FeedbackEntry[]> {
@@ -228,11 +213,11 @@ export class ApiService {
       try {
         return await graphNeo4jDatabaseService.getFeedback();
       } catch (error) {
-        console.error('Failed to fetch feedback from Neo4j, using mock API:', error);
-        return await mockApi.getFeedbackEntries();
+        console.error('Failed to fetch feedback from Neo4j:', error);
+        return [];
       }
     }
-    return await mockApi.getFeedbackEntries();
+    return [];
   }
 
   async getSettings(): Promise<AgentSettings> {
@@ -240,11 +225,11 @@ export class ApiService {
       try {
         return await graphNeo4jDatabaseService.getSettings();
       } catch (error) {
-        console.error('Failed to fetch settings from Neo4j, using mock API:', error);
-        return await mockApi.getSettings();
+        console.error('Failed to fetch settings from Neo4j:', error);
+        throw error;
       }
     }
-    return await mockApi.getSettings();
+    throw new Error('Neo4j not configured. Cannot get settings.');
   }
 
   async updateSettings(newSettings: AgentSettings): Promise<void> {
@@ -252,12 +237,11 @@ export class ApiService {
       try {
         await graphNeo4jDatabaseService.saveSettings(newSettings);
       } catch (error) {
-        console.error('Failed to save settings to Neo4j, using mock API:', error);
-        await mockApi.updateSettings(newSettings);
-        return;
+        console.error('Failed to save settings to Neo4j:', error);
+        throw error;
       }
     } else {
-      await mockApi.updateSettings(newSettings);
+      throw new Error('Neo4j not configured. Cannot update settings.');
     }
     
     // Update agent enabled states
@@ -294,17 +278,16 @@ export class ApiService {
           });
         }
       } catch (error) {
-        console.error('Failed to save feedback to Neo4j, using mock API:', error);
-        await mockApi.submitFeedback(interactionId, rating, comment);
+        console.error('Failed to save feedback to Neo4j:', error);
+        console.log('Feedback submitted (no persistence):', { interactionId, rating, comment });
       }
     } else {
-      await mockApi.submitFeedback(interactionId, rating, comment);
+      console.log('Feedback submitted (no persistence):', { interactionId, rating, comment });
     }
   }
 
   private mapSeverityToCategory(severity: number): 'low' | 'medium' | 'high' | 'critical' {
     if (severity >= 9) return 'critical';
-    if (severity >= 7) return 'high';
     if (severity >= 5) return 'medium';
     return 'low';
   }

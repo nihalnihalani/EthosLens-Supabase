@@ -212,7 +212,7 @@ Be confident in your assessment - if something is clearly false, mark it as such
         
         // Enhanced validation and confidence adjustment
         let confidence = Math.max(0, Math.min(1, parsed.confidence || 0));
-        let isAccurate = parsed.isAccurate || false;
+        const isAccurate = parsed.isAccurate || false;
         
         // Special handling for known false claims
         const content = response.choices[0]?.message?.content?.toLowerCase() || '';

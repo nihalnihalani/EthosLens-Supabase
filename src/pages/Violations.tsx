@@ -1,17 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Search, 
-  Filter, 
-  AlertTriangle, 
-  Shield, 
-  AlertCircle, 
-  XCircle,
-  Calendar,
-  Download,
-  Eye,
-  Clock
-} from 'lucide-react';
+import { AlertTriangle, Shield, Filter, Search, AlertCircle, XCircle, Calendar, Download, Eye, Clock } from 'lucide-react';
+import { API_URLS } from '../config/api';
 import { Violation } from '../types';
 import { format } from 'date-fns';
 import EmptyState from '../components/EmptyState';
@@ -40,7 +30,7 @@ const Violations: React.FC = () => {
       setIsLoading(true);
       try {
         // Fetch interactions from new backend
-        const response = await fetch('http://localhost:4000/api/interactions');
+        const response = await fetch(API_URLS.interactions);
         if (response.ok) {
           const interactions = await response.json();
           const allViolations: ViolationWithContext[] = [];

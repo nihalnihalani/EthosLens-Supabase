@@ -4,8 +4,6 @@ import { Activity, Shield, AlertTriangle, CheckCircle, TrendingUp } from 'lucide
 import StatsCard from '../components/StatsCard';
 import ViolationChart from '../components/ViolationChart';
 import { DashboardStats } from '../types';
-import PerplexityStatus from '../components/PerplexityStatus';
-import Neo4jStatus from '../components/Neo4jStatus';
 import { apiService } from '../api/apiService';
 import EmptyState from '../components/EmptyState';
 import Graph from '../components/Graph';
@@ -79,11 +77,6 @@ const Dashboard: React.FC = () => {
           icon={TrendingUp}
           color="purple"
         />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PerplexityStatus />
-        <Neo4jStatus />
       </div>
 
       <Graph />

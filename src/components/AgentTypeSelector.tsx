@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Zap, Shield, AlertCircle, CheckCircle } from 'lucide-react';
+import { Settings, AlertCircle, Zap, Shield, CheckCircle } from 'lucide-react';
+import { API_URLS } from '../config/api';
 
 interface GovernanceStatus {
   usingInkeep: boolean;
   inkeepAvailable: boolean;
   agentType: 'inkeep' | 'legacy';
+  message?: string;
 }
 
 const AgentTypeSelector: React.FC = () => {
@@ -20,7 +22,7 @@ const AgentTypeSelector: React.FC = () => {
 
   const fetchGovernanceStatus = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/governance/status');
+      const response = await fetch(API_URLS.governanceStatus);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -38,7 +40,7 @@ const AgentTypeSelector: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:4000/api/governance/switch', {
+      const response = await fetch(API_URLS.governanceSwitch, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

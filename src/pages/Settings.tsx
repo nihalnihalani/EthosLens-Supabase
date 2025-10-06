@@ -3,9 +3,6 @@ import { motion } from 'framer-motion';
 import { Save, RotateCcw, Shield, Activity, FileText, MessageSquare, CheckCircle } from 'lucide-react';
 import { apiService } from '../api/apiService';
 import { AgentSettings } from '../types';
-import PerplexityStatus from '../components/PerplexityStatus';
-import Neo4jStatus from '../components/Neo4jStatus';
-import OpenAIStatus from '../components/OpenAIStatus';
 import { useToast } from '../hooks/useToast';
 
 const Settings: React.FC = () => {
@@ -151,15 +148,6 @@ const Settings: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* API Status */}
-        <div className="lg:col-span-2 space-y-4">
-          <OpenAIStatus />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <PerplexityStatus />
-            <Neo4jStatus />
-          </div>
-        </div>
-
         {/* Agent Configuration */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Agent Configuration</h2>

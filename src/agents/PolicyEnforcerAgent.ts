@@ -196,7 +196,7 @@ export class PolicyEnforcerAgent {
 
     // Standard PII under GDPR
     const piiPatterns = [
-      { pattern: /\b[\w\.-]+@[\w\.-]+\.\w+\b/, type: 'email address' },
+      { pattern: /\b[\w.-]+@[\w.-]+\.\w+\b/, type: 'email address' },
       { pattern: /\b\d{3}-\d{2}-\d{4}\b/, type: 'social security number' },
       { pattern: /\b\d{3}-\d{3}-\d{4}\b/, type: 'phone number' },
       { pattern: /\b\d{16}\b/, type: 'credit card number' },

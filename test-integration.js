@@ -6,8 +6,13 @@
  */
 
 import fetch from 'node-fetch';
+import { config } from 'dotenv';
 
-const BASE_URL = 'http://localhost:4000';
+// Load environment variables
+config();
+
+const PORT = process.env.PORT || '3000';
+const BASE_URL = `http://localhost:${PORT}`;
 const INKEEP_URL = 'http://localhost:3003';
 
 // Test prompts with different risk levels

@@ -8,7 +8,7 @@ export interface LLMInteraction {
   violations: Violation[];
   agentActions: AgentAction[];
   userFeedback?: UserFeedback;
-  llmSource?: 'openai' | 'mock' | 'fallback';
+  llmSource?: 'openai' | 'fallback';
   llmModel?: string;
   llmError?: string;
 }
